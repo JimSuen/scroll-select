@@ -23,6 +23,7 @@
 		"*.{ts,vue}": "npm run lint"
 	},
 	"dependencies": {
+		"element-plus": "^2.2.10",
 		"vue": "^3.2.25"
 	},
 	"devDependencies": {
