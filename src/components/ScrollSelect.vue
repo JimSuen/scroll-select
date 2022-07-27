@@ -29,7 +29,7 @@ const { options } = toRefs(props);
 const SIZE = 50;
 const index = ref(0);
 const displayOptions = ref<Option[]>([]);
-const selectValue = ref<null | number | number[]>([1, 61, 80, 81, 90, 111]);
+const selectValue = ref<null | number | number[]>([]);
 const selector = ref<any | null>(null);
 
 const sliceOptions = (idx: number) => {
@@ -50,24 +50,33 @@ const filterSelectedOptions = (optionList: Option[]) => {
 
 const initScrollListener = () => {
   if (!selector.value) return;
-  const scrollContainer = document.querySelector(
-    ".el-select__popper .el-select-dropdown__wrap"
-  );
+  const popperId = selector.value?.$el
+    ?.querySelector(".select-trigger")
+    ?.getAttribute("aria-describedby");
+  const scrollContainer = document
+    .getElementById(popperId)
+    ?.querySelector(".el-select__popper .el-select-dropdown__wrap");
   let scrollPosition = 0;
+  let allowLoad = true;
   scrollContainer?.addEventListener("scroll", (event: any) => {
-    if (!event.target) return;
-    const isFinished = index.value * SIZE > options.value.length;
-    if (isFinished) return;
-    const { scrollTop, clientHeight, scrollHeight } = event.target;
-    const isToUp = scrollTop < scrollPosition;
-    if (isToUp) return;
-    scrollPosition = scrollTop;
-    const LIMIT_BOTTOM = 100;
-    const isBottom = scrollHeight - (scrollTop + clientHeight) < LIMIT_BOTTOM;
-    if (isBottom) {
-      const list = filterSelectedOptions(sliceOptions((index.value += 1)));
-      displayOptions.value.push(...list);
-    }
+    if (!allowLoad) return;
+    allowLoad = false;
+    setTimeout(() => {
+      if (!event.target) return;
+      const isFinished = index.value * SIZE > options.value.length;
+      if (isFinished) return;
+      const { scrollTop, clientHeight, scrollHeight } = event.target;
+      const isToUp = scrollTop < scrollPosition;
+      if (isToUp) return;
+      scrollPosition = scrollTop;
+      const LIMIT_BOTTOM = 100;
+      const isBottom = scrollHeight - (scrollTop + clientHeight) < LIMIT_BOTTOM;
+      if (isBottom) {
+        const list = filterSelectedOptions(sliceOptions((index.value += 1)));
+        displayOptions.value.push(...list);
+      }
+      allowLoad = true;
+    }, 500);
   });
 };
 
